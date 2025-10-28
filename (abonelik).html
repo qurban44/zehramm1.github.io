@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abunəlik Sistemi</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+
+    form {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      max-width: 400px;
+      margin: 0 auto;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 7px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .aboneler {
+      max-width: 400px;
+      margin: 25px auto;
+      background: white;
+      padding: 15px;
+      border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .aboneler h3 {
+      text-align: center;
+      color: #444;
+      margin-bottom: 15px;
+    }
+
+    .kod {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #eef6ff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .kod:hover {
+      background: #dcecff;
+      transform: scale(1.02);
+    }
+
+    /* --- Kiçik kvadrat sil düyməsi --- */
+    .sil-btn {
+      background: #ff4d4d;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+      transition: 0.3s;
+    }
+
+    .sil-btn:hover {
+      background: #d90000;
+      transform: scale(1.1);
+    }
+
+    @media (max-width: 480px) {
+      form, .aboneler {
+        width: 90%;
+        padding: 15px;
+      }
+      input, button {
+        font-size: 14px;
+      }
+      .sil-btn {
+        width: 22px;
+        height: 22px;
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>📋 Abunəlik Qeydiyyatı</h2>
+
+  <form id="abonelikForm">
+    <input type="text" id="ad" placeholder="Ad" required>
+    <input type="text" id="soyad" placeholder="Soyad" required>
+    <input type="text" id="is" placeholder="İş sahəsi" required>
+    <input type="number" id="odenis" placeholder="Ödəniş (AZN)" required>
+    <button type="submit">Yadda saxla</button>
+  </form>
+
+  <div class="aboneler" id="abonelerListesi">
+    <h3>Qeydiyyatlar</h3>
+  </div>
+
+  <script>
+    const form = document.getElementById('abonelikForm');
+    const abonelerListesi = document.getElementById('abonelerListesi');
+    let aboneler = JSON.parse(localStorage.getItem('aboneler')) || [];
+
+    function render() {
+      if (aboneler.length === 0) {
+        abonelerListesi.innerHTML = "<h3>Qeydiyyatlar</h3><p style='text-align:center;color:gray;'>Hələ abunə yoxdur</p>";
+        return;
+      }
+      abonelerListesi.innerHTML = "<h3>Qeydiyyatlar</h3>" + aboneler.map(a => `
+        <div class="kod" onclick="showDetails(${a.kod})">
+          <span>🔢 ${a.kod}</span>
+          <button class="sil-btn" title="Sil" onclick="deleteAbone(event, ${a.kod})">×</button>
+        </div>
+      `).join('');
+    }
+
+    function showDetails(kod) {
+      const abone = aboneler.find(a => a.kod === kod);
+      if (abone) {
+        alert(
+          `📅 Tarix: ${abone.tarix}\n👤 Ad: ${abone.ad} ${abone.soyad}\n💼 İş sahəsi: ${abone.is}\n💰 Ödəniş: ${abone.odenis} AZN\n🔢 Kod: ${abone.kod}`
+        );
+      }
+    }
+
+    function deleteAbone(event, kod) {
+      event.stopPropagation();
+      if (confirm("Bu abunəni silmək istədiyinizə əminsiniz?")) {
+        aboneler = aboneler.filter(a => a.kod !== kod);
+        localStorage.setItem('aboneler', JSON.stringify(aboneler));
+        render();
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const ad = document.getElementById('ad').value.trim();
+      const soyad = document.getElementById('soyad').value.trim();
+      const is = document.getElementById('is').value.trim();
+      const odenis = document.getElementById('odenis').value.trim();
+      const kod = Math.floor(Math.random() * 9000000) + 1000000;
+      const tarix = new Date().toLocaleString('az-AZ');
+
+      aboneler.push({ ad, soyad, is, odenis, kod, tarix });
+      localStorage.setItem('aboneler', JSON.stringify(aboneler));
+      render();
+      form.reset();
+      alert(`✅ Yeni abunə əlavə olundu!\nAbunə kodu: ${kod}`);
+    });
+
+    render();
+  </script>
+
+</body>
+</html>
